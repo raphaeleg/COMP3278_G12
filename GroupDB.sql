@@ -173,7 +173,7 @@ CREATE TABLE `Tutorial_zoom_links` (
   CONSTRAINT `TZL.course_code` FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE `Course_teacher_mesage` (
+CREATE TABLE `Course_teacher_message` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `teacher_message` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`course_code`,`teacher_message`),
