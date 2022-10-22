@@ -3,13 +3,12 @@ CREATE DATABASE `3278_GroupProject` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLA
 USE `3278_GroupProject`;
 
 CREATE TABLE `Student` (
-  `student_uid` int NOT NULL,
+  `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `student_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `email_address` varchar(319) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `degree` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `enrollment_date` date NOT NULL,
   `year_of_study` int NOT NULL,
-  `student_photo` longblob,
   PRIMARY KEY (`student_uid`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -51,7 +50,7 @@ CREATE TABLE `Lecturer` (
 
 CREATE TABLE `RecognitionModel` (
   `model_id` int NOT NULL,
-  `student_uid` int NOT NULL,
+  `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `date_created` date NOT NULL,
   `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`model_id`),
@@ -59,8 +58,8 @@ CREATE TABLE `RecognitionModel` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `LoginHistory` (
-  `login_id` int NOT NULL,
-  `student_uid` int NOT NULL,
+  `login_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `login_time` datetime NOT NULL,
   `logout_time` datetime,
   PRIMARY KEY (`login_id`,`student_uid`),
@@ -86,7 +85,7 @@ CREATE TABLE `TutorTeachesTutorial` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `StudentTakesCourse` (
-  `student_uid` int NOT NULL,
+  `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`student_uid`,`course_code`),
   FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`),
@@ -112,6 +111,7 @@ CREATE TABLE `Lecture_timeslots` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `Lecture_zoom_links` (
+  `zoom_id` int NOT NULL,
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `lecture_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `zoom_links` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -120,6 +120,7 @@ CREATE TABLE `Lecture_zoom_links` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `Tutorial_zoom_links` (
+  `zoom_id` int NOT NULL,
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `group_number` int NOT NULL,
   `zoom_links` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
