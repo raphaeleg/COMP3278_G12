@@ -1,14 +1,15 @@
-COMP3230-1A;Principles of Operating Systems;
-COMP3230-1B;Principles of Operating Systems;
-COMP3234-1A1;Computer and communication networks;
-COMP3234-1A2;Computer and communication networks;
-COMP3234-1A3;Computer and communication networks;
-COMP3234-1A4;Computer and communication networks;
-COMP3251-2A;Algorithm design;
-COMP3252-2A;Algorithm design and analysis;
-COMP3278-1A;1;MWT2;
-COMP3278-2B;Introduction to database management systems;
-CCST9002-1A;Quantitative Literacy in Science, Technology and Society;
-CCST9003-1A;Everyday Computing and the Internet;
-CCST9006-1A;Chasing Biomedical Miracles: Promises and Perils;
-CCST9009-1A;Living with Stem CellsCCST9013-1A;Our Living Environment;
+COMP3230-1A;Principles of Operating System
+COMP3230-1B;Principles of Operating Systems
+COMP3234-1A1;Computer and communication networks
+COMP3234-1A2;Computer and communication networks
+COMP3234-1A3;Computer and communication networks
+COMP3234-1A4;Computer and communication networks
+COMP3251-2A;Algorithm design
+COMP3252-2A;Algorithm design and analysis
+COMP3278-1A;1;MWT2
+COMP3278-2B;Introduction to database management systems
+CCST9002-1A;Quantitative Literacy in Science, Technology and Society
+CCST9003-1A;Everyday Computing and the Internet
+CCST9006-1A;Chasing Biomedical Miracles: Promises and Perils
+CCST9009-1A;Living with Stem Cell
+CCST9013-1A;Our Living Environment
