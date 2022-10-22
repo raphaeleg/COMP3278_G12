@@ -33,8 +33,6 @@ CREATE TABLE `Lecture` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `lecture_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `venue` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `first_day` date NOT NULL,
-  `last_day` date NOT NULL,
   PRIMARY KEY (`course_code`,`lecture_code`),
   FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
