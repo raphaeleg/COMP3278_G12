@@ -1,11 +1,11 @@
-1;Wu Chenshu;chenshu@cs.hku.hk;
-2;Tam Anthony;atctam@cs.hku.hk;
-3;Huang Z.Y.;zhiyi@cs.hku.hk;
-4;Lam T W;twlam@cs.hku.hk;
-5;Luo Ping;pluo@cs.hku.hk;
-6;Chui CK;ckchui@cs.hku.hk;
-7;Dr I.A.C. Mok;iacmok@hku.hk;
-8;Professor L.K. Yeung;kyeung@eee.hku.hk;
-9;Dr K.M. Yao;kmyao@hku.hk;
-10;Professor D. Chan;chand@hku.hk;
-11;Dr S.C. Chang;suchin@hku.hk;
+1;Wu Chenshu;chenshu@cs.hku.hk
+2;Tam Anthony;atctam@cs.hku.hk
+3;Huang Z.Y.;zhiyi@cs.hku.hk
+4;Lam T W;twlam@cs.hku.hk
+5;Luo Ping;pluo@cs.hku.hk
+6;Chui CK;ckchui@cs.hku.hk
+7;Dr I.A.C. Mok;iacmok@hku.hk
+8;Professor L.K. Yeung;kyeung@eee.hku.hk
+9;Dr K.M. Yao;kmyao@hku.hk
+10;Professor D. Chan;chand@hku.hk
+11;Dr S.C. Chang;suchin@hku.hk
