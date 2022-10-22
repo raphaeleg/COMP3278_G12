@@ -175,15 +175,17 @@ CREATE TABLE `Tutorial_zoom_links` (
 
 CREATE TABLE `Course_teacher_message` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `message_id` int NOT NULL,
   `teacher_message` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`course_code`,`teacher_message`),
+  PRIMARY KEY (`course_code`,`message_id`),
   CONSTRAINT `CTM.course_code` FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `Course_lecture_and_tutorial_notes` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `note_id` int NOT NULL,
   `lecture_and_tutorial_notes` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`course_code`,`lecture_and_tutorial_notes`),
+  PRIMARY KEY (`course_code`, `note_id`),
   CONSTRAINT `CLATN.course_code` FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
