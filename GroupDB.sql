@@ -119,6 +119,7 @@ CREATE TABLE `Lecture_zoom_links` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `lecture_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `zoom_links` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (`zoom_id`),
   FOREIGN KEY (`course_code`, `lecture_code`) REFERENCES `Lecture` (`course_code`, `lecture_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -126,7 +127,7 @@ CREATE TABLE `Tutorial_zoom_links` (
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `group_number` int NOT NULL,
   `zoom_links` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (`course_code`,`group_number`,`zoom_links`),
+  PRIMARY KEY (`zoom_id`),
   FOREIGN KEY (`course_code`, `group_number`) REFERENCES `Tutorial` (`course_code`, `group_number`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
