@@ -8,6 +8,8 @@ COMP3251-2A;Algorithm design
 COMP3252-2A;Algorithm design and analysis
 COMP3278-1A;Introduction to database management systems;
 COMP3278-2B;Introduction to database management systems
+COMP3297-1A;Software engineering
+COMP3297-2B;Software engineering
 CCST9002-1A;Quantitative Literacy in Science, Technology and Society
 CCST9003-1A;Everyday Computing and the Internet
 CCST9006-1A;Chasing Biomedical Miracles: Promises and Perils
