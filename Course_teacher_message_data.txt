@@ -1,0 +1,17 @@
+1;COMP3230-1A;Welcome to Principles of Operating System
+2;COMP3230-1B;Welcome to Principles of Operating Systems
+3;COMP3234-1A1;Welcome to Computer and communication networks
+4;COMP3234-1A2;Welcome to Computer and communication networks
+5;COMP3234-1A3;Welcome to Computer and communication networks
+6;COMP3234-1A4;Welcome to Computer and communication networks
+7;COMP3251-2A;Welcome to Algorithm design
+8;COMP3252-2A;Welcome to Algorithm design and analysis
+9;COMP3278-1A;Welcome to Introduction to database management systems
+10;COMP3278-2B;Welcome to Introduction to database management systems
+11;COMP3297-1A;Welcome to Software engineering
+12;COMP3297-2B;Welcome to Software engineering
+13;CCST9002-1A;Welcome to Quantitative Literacy in Science, Technology and Society
+14;CCST9003-1A;Welcome to Everyday Computing and the Internet
+15;CCST9006-1A;Welcome to Chasing Biomedical Miracles: Promises and Perils
+16;CCST9009-1A;Welcome to Living with Stem Cell
+17;CCST9013-1A;Welcome to Our Living Environment
