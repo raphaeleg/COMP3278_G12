@@ -9,3 +9,39 @@ LINES TERMINATED BY '\n';
 LOAD DATA LOCAL INFILE 'tutorial_data.txt' INTO TABLE Tutorial
 FIELDS TERMINATED BY ';'
 LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'lecture_data.txt' INTO TABLE Lecture
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'tutor_data.txt' INTO TABLE Tutor
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'lecturer_data.txt' INTO TABLE Lecturer
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'lecturerteacheslecture_data.txt' INTO TABLE LecturerTeachesLecture
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'tutorteachestutorial_data.txt' INTO TABLE TutorTeachesTutorial
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'studenttakescourse_data.txt' INTO TABLE StudentTakesCourse
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'tutorial_timeslots_data.txt' INTO TABLE Tutorial_timeslots
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'lecture_timeslots_data.txt' INTO TABLE Lecture_timeslots
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'lecture_zoom_links.txt' INTO TABLE Lecture_zoom_links
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
