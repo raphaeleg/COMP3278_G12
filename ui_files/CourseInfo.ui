@@ -174,7 +174,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="course_title_label_courseinfo">
+        <widget class="QLabel" name="course_code_label_courseinfo">
          <property name="font">
           <font>
            <family>Noto Sans CJK HK</family>
@@ -185,7 +185,26 @@
           <enum>Qt::LeftToRight</enum>
          </property>
          <property name="text">
-          <string>[Course Title]</string>
+          <string>[Course Code]</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="course_name_label_courseinfo">
+         <property name="font">
+          <font>
+           <family>Noto Sans CJK HK</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>[Course Name]</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -208,7 +227,7 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QVBoxLayout" name="horizontalLayout_2">
            <item>
             <widget class="QLabel" name="announcement_label_courseinfo">
              <property name="font">
@@ -233,7 +252,7 @@
              <property name="font">
               <font>
                <family>Noto Sans CJK HK</family>
-               <pointsize>14</pointsize>
+               <pointsize>12</pointsize>
               </font>
              </property>
              <property name="layoutDirection">
@@ -249,7 +268,7 @@
            </item>
           </layout>
          </item>
-         <item>
+         <!-- <item>
           <widget class="QPushButton" name="all_announcement_button_courseinfo">
            <property name="font">
             <font>
@@ -261,7 +280,7 @@
             <string>All Announcement</string>
            </property>
           </widget>
-         </item>
+         </item> -->
         </layout>
        </item>
        <item>
@@ -300,61 +319,6 @@
          </item>
          <item>
           <widget class="QListWidget" name="course_info_list_courseinfo">
-           <item>
-            <property name="text">
-             <string>Time: [time]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Classroom: [address]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Zoom Link: [zoom link]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Instructor: [instructor name]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Instructor Email: [instructor email]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>
@@ -373,9 +337,9 @@
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="notes_layout_courseinfo">
+        <layout class="QVBoxLayout" name="material_layout_courseinfo">
          <item>
-          <widget class="QLabel" name="notes_label_courseinfo">
+          <widget class="QLabel" name="material_label_courseinfo">
            <property name="font">
             <font>
              <family>Noto Sans CJK HK</family>
@@ -386,7 +350,7 @@
             <enum>Qt::LeftToRight</enum>
            </property>
            <property name="text">
-            <string>Notes:</string>
+            <string>Materials:</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -394,29 +358,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QListWidget" name="notes_list_courseinfo">
-           <item>
-            <property name="text">
-             <string>Lect1: [n_link1]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Lect2: [n_link2]</string>
-            </property>
-            <property name="font">
-             <font>
-              <family>Noto Sans CJK HK</family>
-              <pointsize>12</pointsize>
-             </font>
-            </property>
-           </item>
+          <widget class="QListWidget" name="material_list_courseinfo">
           </widget>
          </item>
         </layout>
@@ -434,6 +376,7 @@
          </property>
         </widget>
        </item>
+       <!-- 
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
@@ -480,9 +423,9 @@
             </property>
            </item>
           </widget>
-         </item>
+         </item> 
         </layout>
-       </item>
+       </item> -->
       </layout>
      </widget>
     </widget>
