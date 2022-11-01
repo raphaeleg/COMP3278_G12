@@ -87,6 +87,7 @@ CREATE TABLE `TutorTeachesTutorial` (
 CREATE TABLE `StudentTakesCourse` (
   `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `course_code` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `group_number` int NOT NULL,
   PRIMARY KEY (`student_uid`,`course_code`),
   FOREIGN KEY (`course_code`) REFERENCES `Course` (`course_code`),
   FOREIGN KEY (`student_uid`) REFERENCES `Student` (`student_uid`)
@@ -97,7 +98,7 @@ CREATE TABLE `Tutorial_timeslots` (
   `group_number` int NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
-  `day_of_the_week` int NOT NULL,
+  `day_of_the_week` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   FOREIGN KEY (`course_code`, `group_number`) REFERENCES `Tutorial` (`course_code`, `group_number`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -106,7 +107,7 @@ CREATE TABLE `Lecture_timeslots` (
   `lecture_code` varchar(80) COLLATE utf8mb4_general_ci NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
-  `day_of_the_week` int NOT NULL,
+  `day_of_the_week` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   FOREIGN KEY (`course_code`, `lecture_code`) REFERENCES `Lecture` (`course_code`, `lecture_code`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
