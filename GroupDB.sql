@@ -58,7 +58,7 @@ CREATE TABLE `RecognitionModel` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `LoginHistory` (
-  `login_id` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `login_id` int NOT NULL,
   `student_uid` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `login_time` datetime NOT NULL,
   `logout_time` datetime,
