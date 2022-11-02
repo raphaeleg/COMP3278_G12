@@ -158,37 +158,32 @@
       <widget class="QTableWidget" name="timetable_table">
        <row>
         <property name="text">
-         <string>Date</string>
+         <string>7:00</string>
         </property>
        </row>
        <row>
         <property name="text">
-         <string>07:00</string>
+         <string>7:30</string>
         </property>
        </row>
        <row>
         <property name="text">
-         <string>07:30</string>
+         <string>8:00</string>
         </property>
        </row>
        <row>
         <property name="text">
-         <string>08:00</string>
+         <string>8:30</string>
         </property>
        </row>
        <row>
         <property name="text">
-         <string>08:30</string>
+         <string>9:00</string>
         </property>
        </row>
        <row>
         <property name="text">
-         <string>09:00</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>09:30</string>
+         <string>9:30</string>
         </property>
        </row>
        <row>
@@ -323,37 +318,37 @@
        </row>
        <column>
         <property name="text">
-         <string>Mon</string>
+         <string>MON</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Tue</string>
+         <string>TUE</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Wed</string>
+         <string>WED</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Thu</string>
+         <string>THU</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Fri</string>
+         <string>FRI</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Sat</string>
+         <string>SAT</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Sun</string>
+         <string>SUN</string>
         </property>
        </column>
       </widget>
