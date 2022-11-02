@@ -155,7 +155,29 @@
       </spacer>
      </item>
      <item>
-      <widget class="QListView" name="login_hostory_list_loginhistory"/>
+      <widget class="QTableWidget" name="login_hostory_table_loginhistory">
+        <property name="font">
+            <font>
+                <family>Noto Sans CJK HK</family>
+                <pointsize>12</pointsize>
+            </font>
+        </property>
+        <column>
+        <property name="text">
+         <string>Login Time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Logout Time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Duration</string>
+        </property>
+       </column>
+      </widget>
      </item>
     </layout>
    </item>
