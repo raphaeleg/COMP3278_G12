@@ -46,6 +46,18 @@ LOAD DATA LOCAL INFILE 'lecture_zoom_links.txt' INTO TABLE Lecture_zoom_links
 FIELDS TERMINATED BY ';'
 LINES TERMINATED BY '\n';
 
+LOAD DATA LOCAL INFILE 'Tutorial_zoom_links_data.txt' INTO TABLE Tutorial_zoom_links
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
 LOAD DATA LOCAL INFILE 'Course_teacher_message_data.txt' INTO TABLE Course_teacher_message
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'Course_lecture_and_tutorial_notes_data.txt' INTO TABLE Course_lecture_and_tutorial_notes
+FIELDS TERMINATED BY ';'
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INFILE 'login_history_data.txt' INTO TABLE LoginHistory
 FIELDS TERMINATED BY ';'
 LINES TERMINATED BY '\n';
