@@ -17,11 +17,12 @@ import webbrowser
 conn = mysql.connector.connect(
     host="localhost", user="root", passwd="", database="3278_GroupProject"
 )
-cursor = conn.cursor()
+cursor = conn.cursor(buffered=True)
 
 student_uid = "3037123459"
-# temp for testing connection with mysql
-time_now = datetime.today()
+
+login_time = datetime.today()
+
 
 day_of_the_week = ["MON", "TUE", "WED", "THU", "FRI"]
 
@@ -55,7 +56,7 @@ class LoginFace(QDialog):
         # MISSING: face detection code
 
 
-# NOTE: store login time into LoginHistory table
+# NOTE: get login_time
 def StartFaceRecognition():
     # 1 Create database connection
     myconn = mysql.connector.connect(
@@ -251,6 +252,12 @@ def StartFaceRecognition():
 class MainPage(QDialog):
     def __init__(self):
         super(MainPage, self).__init__()
+        # get current time
+        time_now = datetime.today().replace(hour=11, minute=0)
+
+        # list of class for timetable
+        class_list = []
+
         # get student name
         cursor.execute(
             'SELECT student_name FROM Student WHERE student_uid = "'
@@ -276,13 +283,25 @@ class MainPage(QDialog):
             # for lectures
             # get all lecture info
             cursor.execute(
-                'SELECT C.course_code, C.course_name, LT.start_time, LT.day_of_the_week FROM Course C, Lecture_timeslots LT WHERE C.course_code = LT.course_code AND C.course_code = "'
+                'SELECT C.course_code, C.course_name, LT.start_time, LT.day_of_the_week, LT.end_time FROM Course C, Lecture_timeslots LT WHERE C.course_code = LT.course_code AND C.course_code = "'
                 + course[0]
                 + '";'
             )
             lecture_info = cursor.fetchall()
 
             for timeslot in lecture_info:
+                class_info = {
+                    "mode": "lecture",
+                    "code": timeslot[0],
+                    "name": timeslot[1],
+                    "start_time": timeslot[2],
+                    "day": timeslot[3],
+                    "end_time": timeslot[4],
+                    "group": 0,
+                }
+
+                class_list.append(class_info)
+
                 # only loop classes on the same week day
                 if day_of_the_week[time_now.weekday()] != timeslot[3]:
                     continue
@@ -291,19 +310,9 @@ class MainPage(QDialog):
                 course_time = today + timeslot[2]
                 time_diff = (course_time - time_now).seconds / 3600
 
-                if time_diff <= 1:
+                if (time_diff <= 1) and (time_diff > 0):
                     have_class = True
-                    curr_class = {
-                        "mode": "lecture",
-                        "code": timeslot[0],
-                        "name": timeslot[1],
-                        "time": timeslot[2],
-                        "group": 0,
-                    }
-                    break
-
-            if have_class:
-                break
+                    curr_class = class_info
 
             # for tutorials
             # get tutorial gp num
@@ -322,7 +331,7 @@ class MainPage(QDialog):
 
             # get tutorial info
             cursor.execute(
-                "SELECT TT.course_code, C.course_name, TT.start_time, TT.day_of_the_week FROM Course C, Tutorial_timeslots TT WHERE TT.course_code = C.course_code AND TT.group_number = "
+                "SELECT TT.course_code, C.course_name, TT.start_time, TT.day_of_the_week, TT.end_time FROM Course C, Tutorial_timeslots TT WHERE TT.course_code = C.course_code AND TT.group_number = "
                 + str(tutorial_gp_num)
                 + ' AND C.course_code = "'
                 + course[0]
@@ -331,6 +340,18 @@ class MainPage(QDialog):
 
             tutorial_info = cursor.fetchall()[0]
 
+            class_info = {
+                "mode": "tutorial",
+                "code": tutorial_info[0],
+                "name": tutorial_info[1],
+                "start_time": tutorial_info[2],
+                "day": tutorial_info[3],
+                "end_time": tutorial_info[4],
+                "group": tutorial_gp_num,
+            }
+
+            class_list.append(class_info)
+
             if day_of_the_week[time_now.weekday()] != tutorial_info[3]:
                 continue
 
@@ -338,27 +359,12 @@ class MainPage(QDialog):
             course_time = today + tutorial_info[2]
             time_diff = (course_time - time_now).seconds / 3600
 
-            if time_diff <= 1:
+            if (time_diff <= 1) and (time_diff > 0):
                 have_class = True
-                curr_class = {
-                    "mode": "tutorial",
-                    "code": tutorial_info[0],
-                    "name": tutorial_info[1],
-                    "time": tutorial_info[2],
-                    "group": tutorial_gp_num,
-                }
-                break
+                curr_class = class_info
 
         # load CourseInfo page if have class
-        # if have_class:
-        curr_class = {
-            "mode": "lecture",
-            "code": "CCST9002-1A",
-            "name": "Quantitative Literacy in Science, Technology and Society",
-            "time": timedelta(hours=13, minutes=30),
-            "group": 0,
-        }  # testing
-        if True:  # testing
+        if have_class:
             # load ui
             loadUi("CourseInfo.ui", self)
 
@@ -367,7 +373,7 @@ class MainPage(QDialog):
             # self.all_announcement_button_courseinfo.clicked.connect(
             #     self.gotoAnnouncement
             # )
-            self.logout_button_courseinfo.clicked.connect(self.exiting)
+            self.logout_button_courseinfo.clicked.connect(self.logout)
             # self.email_button_courseinfo.clicked.connect(self.emailMe)
 
             # change welcome message
@@ -401,7 +407,10 @@ class MainPage(QDialog):
             self.course_info_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
             # self.course_info_list_courseinfo.setOpenExternalLinks(True)
             self.course_info_list_courseinfo.addItem(
-                "Time: " + str(curr_class["time"])[:-3]
+                "Time: "
+                + str(curr_class["start_time"])[:-3]
+                + " - "
+                + str(curr_class["end_time"])[:-3]
             )
 
             # get venue
@@ -433,17 +442,17 @@ class MainPage(QDialog):
                 cursor.execute(
                     'SELECT zoom_links FROM Tutorial_zoom_links WHERE course_code = "'
                     + curr_class["code"]
-                    + ' AND ";'
+                    + '" AND group_number = '
+                    + str(curr_class["group"])
+                    + ";"
                 )
 
             link = cursor.fetchall()[0][0]
 
             self.course_info_list_courseinfo.addItem("Zoom Link: " + link)
             self.course_info_list_courseinfo.itemClicked.connect(self.zoom_link)
-            # self.course_info_list_courseinfo.clicked.connect(self.link)
 
             # get insturctor info
-            # get zoom link
             if curr_class["mode"] == "lecture":
                 cursor.execute(
                     'SELECT L.instructor_name, L.instructor_email FROM Lecturer L, LecturerTeachesLecture LTL WHERE L.instructor_id = LTL.instructor_id AND LTL.course_code = "'
@@ -455,18 +464,20 @@ class MainPage(QDialog):
                     'SELECT T.instructor_name, T.instructor_email FROM Tutor T, TutorTeachesTutorial TTT WHERE T.instructor_id = TTT.instructor_id AND TTT.course_code = "'
                     + curr_class["code"]
                     + '" AND TTT.group_number = '
-                    + curr_class["group"]
-                    + '";'
+                    + str(curr_class["group"])
+                    + ";"
                 )
 
-            instruxtor_info = cursor.fetchall()[0]
+            instructor_info = cursor.fetchall()[0]
 
             self.course_info_list_courseinfo.addItem(
-                "Instructor: " + instruxtor_info[0]
+                "Instructor: " + instructor_info[0]
             )
             self.course_info_list_courseinfo.addItem(
-                "Instructor Email: " + instruxtor_info[1]
+                "Instructor Email: " + instructor_info[1]
             )
+
+            # MISSING: course material
 
         # load Timetable page if do NOT have class
         else:
@@ -475,10 +486,66 @@ class MainPage(QDialog):
 
             # assign button event handler
             self.login_history_button_timetable.clicked.connect(self.gotoLoginHistory)
-            self.logout_button_timetable.clicked.connect(self.exiting)
+            self.logout_button_timetable.clicked.connect(self.logout)
 
             # change welcome message
             self.welcome_message_label_timetable.setText("Welcome " + student_name)
+
+            # set height of each row
+            self.timetable_table.verticalHeader().setDefaultSectionSize(40)
+
+            # get number of col and row
+            col_num = self.timetable_table.columnCount()
+            row_num = self.timetable_table.rowCount()
+
+            # add class to timetable
+            for class_ in class_list:
+                # col = day of the week
+                for c in range(col_num):
+                    col = self.timetable_table.horizontalHeaderItem(c).text()
+
+                    if class_["day"] != col:
+                        continue
+
+                    in_timetable = False
+
+                    # row = time
+                    for r in range(row_num):
+                        row = self.timetable_table.verticalHeaderItem(r).text()
+
+                        if str(class_["start_time"])[:-3] == row:
+                            # show class code & mode in timtable
+                            self.timetable_table.setItem(
+                                r,
+                                c,
+                                QTableWidgetItem(
+                                    class_["code"] + "\n" + class_["mode"]
+                                ),
+                            )
+
+                            # change bg color of cell
+                            self.timetable_table.item(r, c).setBackground(
+                                QColor(217, 215, 215)
+                            )
+                            in_timetable = True
+
+                        elif in_timetable:
+                            end_time = list(str(class_["end_time"])[:-3])
+                            end_time[3] = str(int(end_time[3]) + 1)
+                            end_time = "".join(end_time)
+
+                            if end_time == row:
+                                break
+
+                            self.timetable_table.setItem(
+                                r, c, QTableWidgetItem(""),
+                            )
+                            self.timetable_table.item(r, c).setBackground(
+                                QColor(217, 215, 215)
+                            )
+
+                    if in_timetable:
+                        break
 
     def gotoAnnouncement(self):
         announcement = Announcement()
@@ -490,8 +557,8 @@ class MainPage(QDialog):
         widget.addWidget(loginhistory)
         widget.setCurrentIndex(widget.currentIndex() + 1)
 
-    def exiting(self):
-        print("Exiting")
+    def logout(self):
+        exiting(login_time)
         sys.exit(app.exec_())
 
     def zoom_link(self, clickedItem):
@@ -502,20 +569,58 @@ class MainPage(QDialog):
     # def emailMe(self):
 
 
+# MISSING: load login history
 class LoginHistory(QDialog):
     def __init__(self):
         super(LoginHistory, self).__init__()
         loadUi("LoginHistory.ui", self)
         self.main_page_button_loginhistory.clicked.connect(self.gotoMainPage)
-        self.logout_button_loginhistory.clicked.connect(self.exiting)
+        self.logout_button_loginhistory.clicked.connect(self.logout)
+
+        # set col width
+        self.login_hostory_table_loginhistory.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch
+        )
+
+        # hide row label
+        self.login_hostory_table_loginhistory.verticalHeader().setVisible(False)
+
+        # get login history from database
+        cursor.execute(
+            'SELECT login_time, logout_time FROM LoginHistory WHERE student_uid = "'
+            + student_uid
+            + '";'
+        )
+
+        login_history_list = cursor.fetchall()
+
+        for history in login_history_list:
+            # add new row
+            row = self.login_hostory_table_loginhistory.rowCount()
+            self.login_hostory_table_loginhistory.insertRow(row)
+
+            # add login time
+            self.login_hostory_table_loginhistory.setItem(
+                row, 0, QTableWidgetItem(str(history[0]))
+            )
+
+            # add logout time
+            self.login_hostory_table_loginhistory.setItem(
+                row, 1, QTableWidgetItem(str(history[1]))
+            )
+
+            # add duration
+            self.login_hostory_table_loginhistory.setItem(
+                row, 2, QTableWidgetItem(str(history[1] - history[0]))
+            )
 
     def gotoMainPage(self):
         mainpage = MainPage()
         widget.addWidget(mainpage)
         widget.setCurrentIndex(widget.currentIndex() + 1)
 
-    def exiting(self):
-        print("Exiting")
+    def logout(self):
+        exiting(login_time)
         sys.exit(app.exec_())
 
 
@@ -525,7 +630,7 @@ class Announcement(QDialog):
         loadUi("Announcement.ui", self)
         self.main_page_button_announcement.clicked.connect(self.gotoMainPage)
         self.login_history_button_announcement.clicked.connect(self.gotoLoginHistory)
-        self.logout_button_announcement.clicked.connect(self.exiting)
+        self.logout_button_announcement.clicked.connect(self.logout)
 
     def gotoMainPage(self):
         mainpage = MainPage()
@@ -537,8 +642,8 @@ class Announcement(QDialog):
         widget.addWidget(loginhistory)
         widget.setCurrentIndex(widget.currentIndex() + 1)
 
-    def exiting(self):
-        print("Exiting")
+    def logout(self):
+        exiting(login_time)
         sys.exit(app.exec_())
 
     def link(self, linkStr):
@@ -550,9 +655,38 @@ class LoginFace(QDialog):
         super(LoginFace, self).__init__()
         StartFaceRecognition()
 
-    def exiting(self):
-        print("Exiting")
-        sys.exit(app.exec_())
+
+# fpr storeing login info when exit/logout
+def exiting(login_time):
+    logout_time = datetime.today()
+
+    # determine login_id
+    cursor.execute("SELECT login_id FROM LoginHistory ORDER BY login_id DESC")
+
+    login_id_table = cursor.fetchone()
+
+    if login_id_table == None:
+        login_id = 1
+
+    else:
+        login_id = int(login_id_table[0]) + 1
+
+    # insert to database
+    cursor.execute(
+        "INSERT INTO LoginHistory VALUES ("
+        + str(login_id)
+        + ', "'
+        + student_uid
+        + '", "'
+        + str(login_time)
+        + '", "'
+        + str(logout_time)
+        + '");'
+    )
+
+    conn.commit()
+
+    print("Exiting")
 
 
 # main
@@ -569,5 +703,5 @@ widget.show()
 try:
     sys.exit(app.exec_())
 except:
-    print("Exiting")
+    exiting(login_time)
 
