@@ -13,13 +13,18 @@ import PySimpleGUI as sg
 from datetime import datetime, timedelta
 from PyQt5.QtGui import *
 import webbrowser
+import uuid
+import os
+import subprocess
+from pathlib import Path
 
 conn = mysql.connector.connect(
     host="localhost", user="root", passwd="", database="3278_GroupProject"
 )
 cursor = conn.cursor(buffered=True)
 
-student_uid = "3037123459"
+student_uid = "3037123459"  # for testing
+# student_uid = ""
 
 login_time = datetime.today()
 
@@ -31,8 +36,9 @@ class Login(QDialog):
     def __init__(self):
         super(Login, self).__init__()
         loadUi("Login.ui", self)
-        username = self.usernameInput_lineEdit_login.text()
+        student_uid = self.usernameInput_lineEdit_login.text()
         self.login_button_login.clicked.connect(self.login)
+        self.login_button_login.setStyleSheet("background-color:#0B5563; color: white")
 
     def login(self):
         # MISSING: check if username in database
@@ -253,7 +259,7 @@ class MainPage(QDialog):
     def __init__(self):
         super(MainPage, self).__init__()
         # get current time
-        time_now = datetime.today().replace(hour=11, minute=0)
+        time_now = datetime.today().replace(day=2, hour=10, minute=00)
 
         # list of class for timetable
         class_list = []
@@ -277,7 +283,7 @@ class MainPage(QDialog):
 
         # get today midnight for remainling time calculation
         today = datetime.today()
-        today = today.replace(hour=0, minute=0)
+        today = today.replace(day=2, hour=0, minute=0)
 
         for course in course_list:
             # for lectures
@@ -307,10 +313,13 @@ class MainPage(QDialog):
                     continue
 
                 # calculate time before class
-                course_time = today + timeslot[2]
-                time_diff = (course_time - time_now).seconds / 3600
+                start_time = today + class_info["start_time"]
+                end_time = today + class_info["end_time"]
+                time_diff_start = (start_time - time_now).seconds / 3600
+                time_diff_end = (end_time - time_now).seconds / 3600
+                class_duration = (end_time - start_time).seconds / 3600
 
-                if (time_diff <= 1) and (time_diff > 0):
+                if (time_diff_start <= 1) or (class_duration - time_diff_end > 0):
                     have_class = True
                     curr_class = class_info
 
@@ -356,10 +365,13 @@ class MainPage(QDialog):
                 continue
 
             # calculate time before class
-            course_time = today + tutorial_info[2]
-            time_diff = (course_time - time_now).seconds / 3600
+            start_time = today + class_info["start_time"]
+            end_time = today + class_info["end_time"]
+            time_diff_start = (start_time - time_now).seconds / 3600
+            time_diff_end = (end_time - time_now).seconds / 3600
+            class_duration = (end_time - start_time).seconds / 3600
 
-            if (time_diff <= 1) and (time_diff > 0):
+            if (time_diff_start <= 1) or (class_duration - time_diff_end > 0):
                 have_class = True
                 curr_class = class_info
 
@@ -368,16 +380,31 @@ class MainPage(QDialog):
             # load ui
             loadUi("CourseInfo.ui", self)
 
+            self.class_info = curr_class
+
             # assign button event handler
             self.login_history_button_courseinfo.clicked.connect(self.gotoLoginHistory)
-            # self.all_announcement_button_courseinfo.clicked.connect(
-            #     self.gotoAnnouncement
-            # )
-            self.logout_button_courseinfo.clicked.connect(self.logout)
-            # self.email_button_courseinfo.clicked.connect(self.emailMe)
+            self.login_history_button_courseinfo.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
 
+            self.logout_button_courseinfo.clicked.connect(self.logout)
+            self.logout_button_courseinfo.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
+
+            self.email_button_courseinfo.clicked.connect(self.emailMe)
+            self.email_button_courseinfo.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
+
+            self.main_page_button_courseinfo.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
             # change welcome message
             self.welcome_message_label_courseinfo.setText("Welcome " + student_name)
+
+            # get class info
 
             # change course code & name
             if curr_class["group"] == 0:
@@ -401,6 +428,7 @@ class MainPage(QDialog):
             lastest_message = cursor.fetchall()[0][0]
 
             self.latest_announcement_label_courseinfo.setText(lastest_message)
+            self.class_info["message"] = lastest_message
 
             # change course info
 
@@ -430,6 +458,7 @@ class MainPage(QDialog):
             venue = cursor.fetchall()[0][0]
 
             self.course_info_list_courseinfo.addItem("Classroom: " + venue)
+            self.class_info["venue"] = venue
 
             # get zoom link
             if curr_class["mode"] == "lecture":
@@ -451,6 +480,7 @@ class MainPage(QDialog):
 
             self.course_info_list_courseinfo.addItem("Zoom Link: " + link)
             self.course_info_list_courseinfo.itemClicked.connect(self.zoom_link)
+            self.class_info["zoom_link"] = link.replace("\r", "")
 
             # get insturctor info
             if curr_class["mode"] == "lecture":
@@ -473,11 +503,48 @@ class MainPage(QDialog):
             self.course_info_list_courseinfo.addItem(
                 "Instructor: " + instructor_info[0]
             )
+            self.class_info["instructor_name"] = str(instructor_info[0])
             self.course_info_list_courseinfo.addItem(
                 "Instructor Email: " + instructor_info[1]
             )
+            self.class_info["instructor_email"] = str(instructor_info[1])
 
-            # MISSING: course material
+            # get course material links
+            cursor.execute(
+                'SELECT lecture_and_tutorial_notes FROM Course_lecture_and_tutorial_notes WHERE course_code = "'
+                + curr_class["code"]
+                # + "COMP3278-1A" #for testing
+                + '";'
+            )
+
+            if cursor.rowcount > 0:
+                note_link_temp = cursor.fetchall()
+                note_link_list = []
+                for note in note_link_temp:
+                    temp = list(str(note[0]))
+                    index = [0, 0]
+                    count = 0
+                    for i in range(len(temp)):
+                        if temp[i] == "'":
+                            index[count] = i
+                            count += 1
+
+                    note_link_list.append(
+                        str("".join(temp[index[0] + 1 : index[1]])).replace("\\r", "")
+                    )
+
+                self.note_link = note_link_list
+
+                # set list font size
+                self.material_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
+
+                # add material to list
+                for i in range(len(self.note_link)):
+                    self.material_list_courseinfo.addItem(
+                        "Note" + str(i + 1) + ": " + self.note_link[i]
+                    )
+
+                self.material_list_courseinfo.itemClicked.connect(self.material_link)
 
         # load Timetable page if do NOT have class
         else:
@@ -486,7 +553,18 @@ class MainPage(QDialog):
 
             # assign button event handler
             self.login_history_button_timetable.clicked.connect(self.gotoLoginHistory)
+            self.login_history_button_timetable.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
+
             self.logout_button_timetable.clicked.connect(self.logout)
+            self.logout_button_timetable.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
+
+            self.main_page_button_timetable.setStyleSheet(
+                "background-color:#0B5563; color: white"
+            )
 
             # change welcome message
             self.welcome_message_label_timetable.setText("Welcome " + student_name)
@@ -525,7 +603,10 @@ class MainPage(QDialog):
 
                             # change bg color of cell
                             self.timetable_table.item(r, c).setBackground(
-                                QColor(217, 215, 215)
+                                QColor(82, 153, 211)
+                            )
+                            self.timetable_table.item(r, c).setForeground(
+                                QBrush(QColor(255, 255, 255))
                             )
                             in_timetable = True
 
@@ -541,7 +622,7 @@ class MainPage(QDialog):
                                 r, c, QTableWidgetItem(""),
                             )
                             self.timetable_table.item(r, c).setBackground(
-                                QColor(217, 215, 215)
+                                QColor(82, 153, 211)
                             )
 
                     if in_timetable:
@@ -565,17 +646,92 @@ class MainPage(QDialog):
         if clickedItem.text()[0:10] == "Zoom Link:":
             webbrowser.open(clickedItem.text()[11:])
 
-    # MISSING: email course info to student email
-    # def emailMe(self):
+    def material_link(self, clickedItem):
+        index = int(clickedItem.text()[4]) - 1
+        path = Path(os.getcwd())
+        webbrowser.open_new(os.getcwd().replace("ui_files", "") + self.note_link[index])
+
+    def emailMe(self):
+        # set popup window
+        msg = QMessageBox()
+        msg.setWindowTitle("Email Me")
+        msg.setText(
+            self.class_info["code"]
+            + "'s information and material have been emailed to you!"
+        )
+
+        # get student email
+        cursor.execute(
+            'SELECT email_address FROM Student WHERE student_uid = "'
+            + student_uid
+            + '";'
+        )
+        email_address = cursor.fetchall()[0][0]
+
+        # construct email
+        subject = (
+            self.class_info["code"]
+            + "'s "
+            + self.class_info["mode"]
+            + " information and materials"
+        )
+        subject = subject.replace(" ", "%20")  # replace white space
+
+        materials = ""
+        for i in range(len(self.note_link)):
+            materials = (
+                materials + "Note" + str(i + 1) + ": " + self.note_link[i] + "\n    "
+            )
+
+        email_content = f"""{self.class_info["code"]} {self.class_info["name"]} {self.class_info["mode"]}
+    Message from Instructor: {self.class_info["message"]}
+
+Course Information:
+    Time: {self.class_info["start_time"]} - {self.class_info["end_time"]}
+    Classroom: {self.class_info["venue"]}
+    Zoom Link: {self.class_info["zoom_link"]}
+    Instructor: {self.class_info["instructor_name"]}
+    Instructor Email: {self.class_info["instructor_email"]}
+
+Course Material (please download the materials in the ICMS system):
+    {materials}
+        """
+
+        email_content = email_content.replace(" ", "%20")
+        email_content = email_content.replace("\n", "%0A")
+        email_content = email_content.replace("&", "%26")
+
+        # show popup window
+        x = msg.exec_()
+
+        # send email through webbrowser
+        webbrowser.open(
+            "mailto:?to="
+            + email_address
+            + "&subject="
+            + subject
+            + "&body="
+            + email_content,
+            new=1,
+        )
 
 
-# MISSING: load login history
 class LoginHistory(QDialog):
     def __init__(self):
         super(LoginHistory, self).__init__()
         loadUi("LoginHistory.ui", self)
         self.main_page_button_loginhistory.clicked.connect(self.gotoMainPage)
+        self.main_page_button_loginhistory.setStyleSheet(
+            "background-color:#0B5563; color: white"
+        )
         self.logout_button_loginhistory.clicked.connect(self.logout)
+        self.logout_button_loginhistory.setStyleSheet(
+            "background-color:#0B5563; color: white"
+        )
+
+        self.login_history_button_loginhistory.setStyleSheet(
+            "background-color:#0B5563; color: white"
+        )
 
         # set col width
         self.login_hostory_table_loginhistory.horizontalHeader().setSectionResizeMode(
@@ -589,7 +745,7 @@ class LoginHistory(QDialog):
         cursor.execute(
             'SELECT login_time, logout_time FROM LoginHistory WHERE student_uid = "'
             + student_uid
-            + '";'
+            + '" ORDER BY login_time DESC;'
         )
 
         login_history_list = cursor.fetchall()
@@ -624,32 +780,6 @@ class LoginHistory(QDialog):
         sys.exit(app.exec_())
 
 
-class Announcement(QDialog):
-    def __init__(self):
-        super(Announcement, self).__init__()
-        loadUi("Announcement.ui", self)
-        self.main_page_button_announcement.clicked.connect(self.gotoMainPage)
-        self.login_history_button_announcement.clicked.connect(self.gotoLoginHistory)
-        self.logout_button_announcement.clicked.connect(self.logout)
-
-    def gotoMainPage(self):
-        mainpage = MainPage()
-        widget.addWidget(mainpage)
-        widget.setCurrentIndex(widget.currentIndex() + 1)
-
-    def gotoLoginHistory(self):
-        loginhistory = LoginHistory()
-        widget.addWidget(loginhistory)
-        widget.setCurrentIndex(widget.currentIndex() + 1)
-
-    def logout(self):
-        exiting(login_time)
-        sys.exit(app.exec_())
-
-    def link(self, linkStr):
-        QDesktopServices.openUrl(QUrl(linkStr))
-
-
 class LoginFace(QDialog):
     def __init__(self):
         super(LoginFace, self).__init__()
@@ -660,22 +790,13 @@ class LoginFace(QDialog):
 def exiting(login_time):
     logout_time = datetime.today()
 
-    # determine login_id
-    cursor.execute("SELECT login_id FROM LoginHistory ORDER BY login_id DESC")
-
-    login_id_table = cursor.fetchone()
-
-    if login_id_table == None:
-        login_id = 1
-
-    else:
-        login_id = int(login_id_table[0]) + 1
+    login_id = str(uuid.uuid4())
 
     # insert to database
     cursor.execute(
-        "INSERT INTO LoginHistory VALUES ("
+        'INSERT INTO LoginHistory VALUES ("'
         + str(login_id)
-        + ', "'
+        + '", "'
         + student_uid
         + '", "'
         + str(login_time)
