@@ -71,7 +71,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Username:</string>
+          <string>UID:</string>
          </property>
          <property name="margin">
           <number>10</number>
