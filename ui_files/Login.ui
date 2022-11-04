@@ -37,7 +37,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Login</string>
+        <string>Please Login to continue</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -61,7 +61,7 @@
       </spacer>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="usernameField_horizontalLayout_login" stretch="0,1,0">
+      <layout class="QHBoxLayout" name="usernameField_horizontalLayout_login" stretch="0,1,0,0">
        <item>
         <widget class="QLabel" name="username_label_login">
          <property name="font">
@@ -87,6 +87,19 @@
           </font>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QPushButton" name="login_button_login">

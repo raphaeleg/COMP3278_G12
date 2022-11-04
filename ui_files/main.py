@@ -40,7 +40,16 @@ class Login(QDialog):
         loadUi("Login.ui", self)
         student_uid = self.usernameInput_lineEdit_login.text()
         self.login_button_login.clicked.connect(self.login)
-        self.login_button_login.setStyleSheet("background-color:#0B5563; color: white")
+        self.login_button_login.setStyleSheet(
+            "background-color:#0B5563; color: white;")
+        # creating a QGraphicsDropShadowEffect object
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setColor(QColor(74, 144, 158))
+        shadow.setOffset(0, 0)
+        shadow.setBlurRadius(20)
+
+        # adding shadow to the label
+        self.login_button_login.setGraphicsEffect(shadow)
 
     def login(self):
         global student_uid
@@ -152,8 +161,8 @@ class QtCapture(QtWidgets.QWidget):
         # Save images if isCapturing
         for (x, y, w, h) in self.faces:
             print(x, w, y, h)
-            roi_gray = gray[y : y + h, x : x + w]
-            roi_color = frame[y : y + h, x : x + w]
+            roi_gray = gray[y: y + h, x: x + w]
+            roi_color = frame[y: y + h, x: x + w]
             # predict the id and confidence for faces
             id_, conf = self.recognizer.predict(roi_gray)
 
@@ -168,7 +177,8 @@ class QtCapture(QtWidgets.QWidget):
                 current_name = name.split("_")[0]
                 color = (255, 0, 0)
                 stroke = 2
-                cv2.putText(frame, name, (x, y), font, 1, color, stroke, cv2.LINE_AA)
+                cv2.putText(frame, name, (x, y), font, 1,
+                            color, stroke, cv2.LINE_AA)
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
                 # Find the student information in the database.
                 select = (
@@ -187,7 +197,8 @@ class QtCapture(QtWidgets.QWidget):
                 # If the student's information is not found in the database
                 if data == "error":
                     # the student's data is not in the database
-                    print("The student", current_name, "is NOT FOUND in the database.")
+                    print("The student", current_name,
+                          "is NOT FOUND in the database.")
 
                 # If the student's information is found in the database
                 else:
@@ -208,7 +219,8 @@ class QtCapture(QtWidgets.QWidget):
                     # cursor.execute(update, val)
                     # myconn.commit()
 
-                    hello = ("Hello ", current_name, "You did attendance today")
+                    hello = ("Hello ", current_name,
+                             "You did attendance today")
                     print(hello)
                     self.stop()
                     self.deleteLater()
@@ -223,7 +235,8 @@ class QtCapture(QtWidgets.QWidget):
                 stroke = 2
                 font = cv2.QT_FONT_NORMAL
                 cv2.putText(
-                    frame, "UNKNOWN", (x, y), font, 1, color, stroke, cv2.LINE_AA
+                    frame, "UNKNOWN", (x,
+                                       y), font, 1, color, stroke, cv2.LINE_AA
                 )
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
                 hello = "Your face is not recognized"
@@ -254,204 +267,11 @@ class QtCapture(QtWidgets.QWidget):
         super(QtWidgets.QWidget, self).deleteLater()
 
 
-# NOTE: get login_time
-def StartFaceRecognition():
-    # 1 Create database connection
-    myconn = mysql.connector.connect(
-        host="localhost", user="root", passwd="", database="3278_GroupProject"
-    )
-    date = datetime.utcnow()
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    cursor = myconn.cursor()
-
-    # 2 Load recognize and read label from model
-    recognizer = cv2.face.LBPHFaceRecognizer_create()
-    recognizer.read("FaceRecognition/train.yml")
-
-    labels = {"person_name": 1}
-    with open("FaceRecognition/labels.pickle", "rb") as f:
-        labels = pickle.load(f)
-        labels = {v: k for k, v in labels.items()}
-
-    # create text to speech
-    engine = pyttsx3.init()
-    rate = engine.getProperty("rate")
-    engine.setProperty("rate", 175)
-
-    # Define camera and detect face
-    face_cascade = cv2.CascadeClassifier(
-        "FaceRecognition/haarcascade/haarcascade_frontalface_default.xml"
-    )
-    cap = cv2.VideoCapture(0)
-
-    # 3 Define pysimplegui setting
-    layout = [
-        [
-            sg.Text(
-                "Setting",
-                size=(18, 1),
-                font=("Any", 18),
-                text_color="#1c86ee",
-                justification="left",
-            )
-        ],
-        [
-            sg.Text("Confidence"),
-            sg.Slider(
-                range=(0, 100),
-                orientation="h",
-                resolution=1,
-                default_value=60,
-                size=(15, 15),
-                key="confidence",
-            ),
-        ],
-        [sg.OK(), sg.Cancel()],
-    ]
-    win = sg.Window(
-        "Attendance System",
-        default_element_size=(21, 1),
-        text_justification="right",
-        auto_size_text=False,
-    ).Layout(layout)
-    event, values = win.Read()
-    if event is None or event == "Cancel":
-        exit()
-    args = values
-    gui_confidence = args["confidence"]
-    win_started = False
-
-    # 4 Open the camera and start face recognition
-    while True:
-        ret, frame = cap.read()
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=5)
-
-        for (x, y, w, h) in faces:
-            print(x, w, y, h)
-            roi_gray = gray[y : y + h, x : x + w]
-            roi_color = frame[y : y + h, x : x + w]
-            # predict the id and confidence for faces
-            id_, conf = recognizer.predict(roi_gray)
-
-            # If the face is recognized
-            if conf >= gui_confidence:
-                # print(id_)
-                # print(labels[id_])
-                font = cv2.QT_FONT_NORMAL
-                id = 0
-                id += 1
-                name = labels[id_]
-                current_name = name
-                color = (255, 0, 0)
-                stroke = 2
-                cv2.putText(frame, name, (x, y), font, 1, color, stroke, cv2.LINE_AA)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
-
-                # Find the student information in the database.
-                select = (
-                    "SELECT student_id, name, DAY(login_date), MONTH(login_date), YEAR(login_date) FROM Student WHERE name='%s'"
-                    % (name)
-                )
-                name = cursor.execute(select)
-                result = cursor.fetchall()
-                # print(result)
-                data = "error"
-
-                for x in result:
-                    data = x
-
-                # If the student's information is not found in the database
-                if data == "error":
-                    # the student's data is not in the database
-                    print("The student", current_name, "is NOT FOUND in the database.")
-
-                # If the student's information is found in the database
-                else:
-                    """
-                    Implement useful functions here.
-                    Check the course and classroom for the student.
-                        If the student has class room within one hour, the corresponding course materials
-                            will be presented in the GUI.
-                        if the student does not have class at the moment, the GUI presents a personal class 
-                            timetable for the student.
-
-                    """
-                    update = "UPDATE Student SET login_date=%s WHERE name=%s"
-                    val = (date, current_name)
-                    cursor.execute(update, val)
-                    update = "UPDATE Student SET login_time=%s WHERE name=%s"
-                    val = (current_time, current_name)
-                    cursor.execute(update, val)
-                    myconn.commit()
-
-                    hello = ("Hello ", current_name, "You did attendance today")
-                    print(hello)
-                    engine.say(hello)
-
-            # If the face is unrecognized
-            else:
-                color = (255, 0, 0)
-                stroke = 2
-                font = cv2.QT_FONT_NORMAL
-                cv2.putText(
-                    frame, "UNKNOWN", (x, y), font, 1, color, stroke, cv2.LINE_AA
-                )
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
-                hello = "Your face is not recognized"
-                print(hello)
-                engine.say(hello)
-                # engine.runAndWait()
-
-        # GUI
-        imgbytes = cv2.imencode(".png", frame)[1].tobytes()
-        if not win_started:
-            win_started = True
-            layout = [
-                [sg.Text("Attendance System Interface", size=(30, 1))],
-                [sg.Image(data=imgbytes, key="_IMAGE_")],
-                [
-                    sg.Text("Confidence"),
-                    sg.Slider(
-                        range=(0, 100),
-                        orientation="h",
-                        resolution=1,
-                        default_value=60,
-                        size=(15, 15),
-                        key="confidence",
-                    ),
-                ],
-                [sg.Exit()],
-            ]
-            win = (
-                sg.Window(
-                    "Attendance System",
-                    default_element_size=(14, 1),
-                    text_justification="right",
-                    auto_size_text=False,
-                )
-                .Layout(layout)
-                .Finalize()
-            )
-            image_elem = win.FindElement("_IMAGE_")
-        else:
-            image_elem.Update(data=imgbytes)
-
-        event, values = win.Read(timeout=20)
-        if event is None or event == "Exit":
-            break
-        gui_confidence = values["confidence"]
-
-    win.Close()
-    cap.release()
-
-
 class MainPage(QDialog):
     def __init__(self):
         super(MainPage, self).__init__()
         # get current time
-        time_now = datetime.today().replace(day=2, hour=10, minute=00)
+        time_now = datetime.today().replace(day=2, hour=00, minute=00)
 
         # list of class for timetable
         class_list = []
@@ -575,7 +395,8 @@ class MainPage(QDialog):
             self.class_info = curr_class
 
             # assign button event handler
-            self.login_history_button_courseinfo.clicked.connect(self.gotoLoginHistory)
+            self.login_history_button_courseinfo.clicked.connect(
+                self.gotoLoginHistory)
             self.login_history_button_courseinfo.setStyleSheet(
                 "background-color:#0B5563; color: white"
             )
@@ -593,8 +414,27 @@ class MainPage(QDialog):
             self.main_page_button_courseinfo.setStyleSheet(
                 "background-color:#0B5563; color: white"
             )
+
+            # shadow
+            for x in range(4):
+                shadow = QGraphicsDropShadowEffect()
+                shadow.setColor(QColor(74, 144, 158))
+                shadow.setOffset(0, 0)
+                shadow.setBlurRadius(20)
+
+                if x == 0:
+                    self.login_history_button_courseinfo.setGraphicsEffect(
+                        shadow)
+                elif x == 1:
+                    self.logout_button_courseinfo.setGraphicsEffect(shadow)
+                elif x == 2:
+                    self.email_button_courseinfo.setGraphicsEffect(shadow)
+                else:
+                    self.main_page_button_courseinfo.setGraphicsEffect(shadow)
+
             # change welcome message
-            self.welcome_message_label_courseinfo.setText("Welcome " + student_name)
+            self.welcome_message_label_courseinfo.setText(
+                "Welcome " + student_name)
 
             # get class info
 
@@ -607,7 +447,8 @@ class MainPage(QDialog):
                 )
             else:
                 self.course_code_label_courseinfo.setText(
-                    curr_class["code"] + "    Tutorial Gp" + str(curr_class["group"])
+                    curr_class["code"] + "    Tutorial Gp" +
+                    str(curr_class["group"])
                 )
 
             self.course_name_label_courseinfo.setText(curr_class["name"])
@@ -626,7 +467,8 @@ class MainPage(QDialog):
 
             # change course info
 
-            self.course_info_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
+            self.course_info_list_courseinfo.setFont(
+                QFont("Noto Sans CJK HK", 12))
             # self.course_info_list_courseinfo.setOpenExternalLinks(True)
             self.course_info_list_courseinfo.addItem(
                 "Time: "
@@ -673,7 +515,8 @@ class MainPage(QDialog):
             link = cursor.fetchall()[0][0]
 
             self.course_info_list_courseinfo.addItem("Zoom Link: " + link)
-            self.course_info_list_courseinfo.itemClicked.connect(self.zoom_link)
+            self.course_info_list_courseinfo.itemClicked.connect(
+                self.zoom_link)
             self.class_info["zoom_link"] = link.replace("\r", "")
 
             # get insturctor info
@@ -724,13 +567,15 @@ class MainPage(QDialog):
                             count += 1
 
                     note_link_list.append(
-                        str("".join(temp[index[0] + 1 : index[1]])).replace("\\r", "")
+                        str("".join(temp[index[0] + 1: index[1]])
+                            ).replace("\\r", "")
                     )
 
                 self.note_link = note_link_list
 
                 # set list font size
-                self.material_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
+                self.material_list_courseinfo.setFont(
+                    QFont("Noto Sans CJK HK", 12))
 
                 # add material to list
                 for i in range(len(self.note_link)):
@@ -738,7 +583,8 @@ class MainPage(QDialog):
                         "Note" + str(i + 1) + ": " + self.note_link[i]
                     )
 
-                self.material_list_courseinfo.itemClicked.connect(self.material_link)
+                self.material_list_courseinfo.itemClicked.connect(
+                    self.material_link)
 
         # load Timetable page if do NOT have class
         else:
@@ -746,7 +592,8 @@ class MainPage(QDialog):
             loadUi("Timetable.ui", self)
 
             # assign button event handler
-            self.login_history_button_timetable.clicked.connect(self.gotoLoginHistory)
+            self.login_history_button_timetable.clicked.connect(
+                self.gotoLoginHistory)
             self.login_history_button_timetable.setStyleSheet(
                 "background-color:#0B5563; color: white"
             )
@@ -760,14 +607,31 @@ class MainPage(QDialog):
                 "background-color:#0B5563; color: white"
             )
 
+            # shadow
+            for x in range(3):
+                shadow = QGraphicsDropShadowEffect()
+                shadow.setColor(QColor(74, 144, 158))
+                shadow.setOffset(0, 0)
+                shadow.setBlurRadius(20)
+
+                if x == 0:
+                    self.login_history_button_timetable.setGraphicsEffect(
+                        shadow)
+                elif x == 1:
+                    self.logout_button_timetable.setGraphicsEffect(shadow)
+                else:
+                    self.main_page_button_timetable.setGraphicsEffect(shadow)
+
             # change welcome message
-            self.welcome_message_label_timetable.setText("Welcome " + student_name)
+            self.welcome_message_label_timetable.setText(
+                "Welcome " + student_name)
 
             # set height of each row
             self.timetable_table.verticalHeader().setDefaultSectionSize(40)
 
             # disable cell edit
-            self.timetable_table.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+            self.timetable_table.setEditTriggers(
+                QtGui.QAbstractItemView.NoEditTriggers)
 
             # get number of col and row
             col_num = self.timetable_table.columnCount()
@@ -846,7 +710,8 @@ class MainPage(QDialog):
     def material_link(self, clickedItem):
         index = int(clickedItem.text()[4]) - 1
         path = Path(os.getcwd())
-        webbrowser.open_new(os.getcwd().replace("ui_files", "") + self.note_link[index])
+        webbrowser.open_new(os.getcwd().replace(
+            "ui_files", "") + self.note_link[index])
 
     def emailMe(self):
         # set popup window
@@ -877,7 +742,8 @@ class MainPage(QDialog):
         materials = ""
         for i in range(len(self.note_link)):
             materials = (
-                materials + "Note" + str(i + 1) + ": " + self.note_link[i] + "\n    "
+                materials + "Note" + str(i + 1) +
+                ": " + self.note_link[i] + "\n    "
             )
 
         email_content = f"""{self.class_info["code"]} {self.class_info["name"]} {self.class_info["mode"]}
@@ -929,6 +795,20 @@ class LoginHistory(QDialog):
         self.login_history_button_loginhistory.setStyleSheet(
             "background-color:#0B5563; color: white"
         )
+
+        for x in range(3):
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setColor(QColor(74, 144, 158))
+            shadow.setOffset(0, 0)
+            shadow.setBlurRadius(20)
+
+            if x == 0:
+                self.main_page_button_loginhistory.setGraphicsEffect(shadow)
+            elif x == 1:
+                self.logout_button_loginhistory.setGraphicsEffect(shadow)
+            else:
+                self.login_history_button_loginhistory.setGraphicsEffect(
+                    shadow)
 
         # set col width
         self.login_hostory_table_loginhistory.horizontalHeader().setSectionResizeMode(
