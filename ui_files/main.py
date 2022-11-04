@@ -1,6 +1,6 @@
 import sys
 from PyQt5.uic import loadUi
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import *
 import urllib
 import numpy as np
@@ -34,25 +34,52 @@ day_of_the_week = ["MON", "TUE", "WED", "THU", "FRI"]
 
 class Login(QDialog):
     def __init__(self):
+        global student_uid
         super(Login, self).__init__()
+        self.capture = None
+
         loadUi("Login.ui", self)
         student_uid = self.usernameInput_lineEdit_login.text()
         self.login_button_login.clicked.connect(self.login)
-        self.login_button_login.setStyleSheet("background-color:#0B5563; color: white")
+        self.login_button_login.setStyleSheet(
+            "background-color:#0B5563; color: white")
 
     def login(self):
-        # MISSING: check if username in database
-        # if (username in data base):
-        # loginface = LoginFace()
-        # widget.addWidget(loginface)
-        # widget.setCurrentIndex(widget.currentIndex() + 1)
-        # else:
-        #    self.lineEdit.clear
+        global student_uid
+        student_uid = self.usernameInput_lineEdit_login.text()
 
-        # TEMP: set to go to mainpage for simplicity
-        mainpage = MainPage()
-        widget.addWidget(mainpage)
-        widget.setCurrentIndex(widget.currentIndex() + 1)
+        # MISSING: check if username in database
+        cursor.execute(
+            'SELECT student_name FROM Student WHERE student_uid = "'
+            + student_uid
+            + '";'
+        )
+        result = cursor.fetchall()
+        # print(result)
+        data = "error"
+
+        for x in result:
+            data = x
+
+        # If the student's information is not found in the database
+        if data == "error":
+            # the student's data is not in the database
+            print("The user " + student_uid +
+                  " is NOT FOUND in the database.")
+            self.usernameInput_lineEdit_login.clear()
+        else:
+            # student_uid = self.username.text();
+            # loginface = ControlWindow()
+            # widget.addWidget(loginface)
+            # widget.setCurrentIndex(widget.currentIndex() + 1)
+            if not self.capture:
+                self.capture = QtCapture(0)
+                # self.end_button.clicked.connect(self.capture.stop)
+                # self.capture.setFPS(1)
+                self.capture.setParent(self)
+                self.capture.setWindowFlags(QtCore.Qt.Tool)
+            self.capture.start()
+            self.capture.show()
 
 
 class LoginFace(QDialog):
@@ -60,6 +87,166 @@ class LoginFace(QDialog):
         super(LoginFace, self).__init__()
         loadUi("LoginFace.ui", self)
         # MISSING: face detection code
+
+# to capture face and do face recognition
+
+
+class QtCapture(QtWidgets.QWidget):
+    def __init__(self, *args):
+        super(QtWidgets.QWidget, self).__init__()
+
+        global student_uid
+        # 1 Create database connection
+        self.myconn = mysql.connector.connect(
+            host="localhost", user="root", passwd="flutterball55", database="3278_GroupProject"
+        )
+        self.date = datetime.utcnow()
+        self.now = datetime.now()
+        self.current_time = self.now.strftime("%H:%M:%S")
+        self.cursor = self.myconn.cursor()
+
+        # 2 Load recognize and read label from model
+        self.recognizer = cv2.face.LBPHFaceRecognizer_create()
+        self.recognizer.read("./FaceRecognition/train.yml")
+
+        self.labels = {"person_name": 1}
+        with open("./FaceRecognition/labels.pickle", "rb") as f:
+            self.labels = pickle.load(f)
+            self.labels = {v: k for k, v in self.labels.items()}
+
+        # create text to speech
+        engine = pyttsx3.init()
+        rate = engine.getProperty("rate")
+        engine.setProperty("rate", 175)
+
+        # Define camera and detect face
+        self.fps = 24
+        self.cap = cv2.VideoCapture(*args)
+        self.gui_confidence = 40
+        self.face_cascade = cv2.CascadeClassifier(
+            './FaceRecognition/haarcascade/haarcascade_frontalface_default.xml')
+
+        self.video_frame = QtWidgets.QLabel()
+        lay = QtWidgets.QVBoxLayout()
+        # lay.setMargin(0)
+        lay.addWidget(self.video_frame)
+        self.setLayout(lay)
+
+        # ------ Modification ------ #
+        self.ith_frame = 1
+        # ------ Modification ------ #
+
+    def setFPS(self, fps):
+        self.fps = fps
+
+    def nextFrameSlot(self):
+        ret, frame = self.cap.read()
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        self.faces = self.face_cascade.detectMultiScale(
+            gray, scaleFactor=1.5, minNeighbors=5)
+
+        # ------ Modification ------ #
+        # Save images if isCapturing
+        for (x, y, w, h) in self.faces:
+            print(x, w, y, h)
+            roi_gray = gray[y:y + h, x:x + w]
+            roi_color = frame[y:y + h, x:x + w]
+            # predict the id and confidence for faces
+            id_, conf = self.recognizer.predict(roi_gray)
+
+            # If the face is recognized
+            if conf >= self.gui_confidence:
+                print(id_)
+                print(self.labels)
+                font = cv2.QT_FONT_NORMAL
+                id = 0
+                id += 1
+                name = self.labels[id_]
+                current_name = name.split("_")[0]
+                color = (255, 0, 0)
+                stroke = 2
+                cv2.putText(frame, name, (x, y), font, 1,
+                            color, stroke, cv2.LINE_AA)
+                cv2.rectangle(frame, (x, y), (x + w, y + h),
+                              (255, 0, 0), (2))
+                # Find the student information in the database.
+                select = "SELECT student_uid FROM Student WHERE student_uid='"+current_name+"'"
+                name = cursor.execute(select)
+                result = cursor.fetchall()
+                # print(result)
+                data = "error"
+
+                for x in result:
+                    data = x
+
+                # If the student's information is not found in the database
+                if data == "error":
+                    # the student's data is not in the database
+                    print("The student", current_name,
+                          "is NOT FOUND in the database.")
+
+                # If the student's information is found in the database
+                else:
+                    """
+                    Implement useful functions here.
+                    Check the course and classroom for the student.
+                        If the student has class room within one hour, the corresponding course materials
+                            will be presented in the GUI.
+                        if the student does not have class at the moment, the GUI presents a personal class
+                            timetable for the student.
+
+                    """
+                    # update = "UPDATE Student SET login_date=%s WHERE name=%s"
+                    # val = (date, current_name)
+                    # cursor.execute(update, val)
+                    # update = "UPDATE Student SET login_time=%s WHERE name=%s"
+                    # val = (current_time, current_name)
+                    # cursor.execute(update, val)
+                    # myconn.commit()
+
+                    hello = ("Hello ", current_name,
+                             "You did attendance today")
+                    print(hello)
+                    self.stop()
+                    self.deleteLater()
+                    main = MainPage()
+                    widget.addWidget(main)
+                    widget.setCurrentIndex(widget.currentIndex() + 1)
+                    break
+
+            # If the face is unrecognized
+            else:
+                color = (255, 0, 0)
+                stroke = 2
+                font = cv2.QT_FONT_NORMAL
+                cv2.putText(frame, "UNKNOWN", (x, y), font,
+                            1, color, stroke, cv2.LINE_AA)
+                cv2.rectangle(frame, (x, y), (x + w, y + h),
+                              (255, 0, 0), (2))
+                hello = ("Your face is not recognized")
+                print(hello)
+        self.ith_frame += 1
+        # ------ Modification ------ #
+
+        # My webcam yields frames in BGR format
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = QtGui.QImage(
+            frame, frame.shape[1], frame.shape[0], QtGui.QImage.Format_RGB888)
+        pix = QtGui.QPixmap.fromImage(img)
+        self.video_frame.setPixmap(pix)
+
+    def start(self):
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.nextFrameSlot)
+        self.timer.start(1000./self.fps)
+
+    def stop(self):
+        self.timer.stop()
+    # ------ Modification ------ #
+
+    def deleteLater(self):
+        self.cap.release()
+        super(QtWidgets.QWidget, self).deleteLater()
 
 
 # NOTE: get login_time
@@ -134,12 +321,13 @@ def StartFaceRecognition():
     while True:
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=5)
+        faces = face_cascade.detectMultiScale(
+            gray, scaleFactor=1.5, minNeighbors=5)
 
         for (x, y, w, h) in faces:
             print(x, w, y, h)
-            roi_gray = gray[y : y + h, x : x + w]
-            roi_color = frame[y : y + h, x : x + w]
+            roi_gray = gray[y: y + h, x: x + w]
+            roi_color = frame[y: y + h, x: x + w]
             # predict the id and confidence for faces
             id_, conf = recognizer.predict(roi_gray)
 
@@ -154,7 +342,8 @@ def StartFaceRecognition():
                 current_name = name
                 color = (255, 0, 0)
                 stroke = 2
-                cv2.putText(frame, name, (x, y), font, 1, color, stroke, cv2.LINE_AA)
+                cv2.putText(frame, name, (x, y), font, 1,
+                            color, stroke, cv2.LINE_AA)
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
 
                 # Find the student information in the database.
@@ -173,7 +362,8 @@ def StartFaceRecognition():
                 # If the student's information is not found in the database
                 if data == "error":
                     # the student's data is not in the database
-                    print("The student", current_name, "is NOT FOUND in the database.")
+                    print("The student", current_name,
+                          "is NOT FOUND in the database.")
 
                 # If the student's information is found in the database
                 else:
@@ -194,7 +384,8 @@ def StartFaceRecognition():
                     cursor.execute(update, val)
                     myconn.commit()
 
-                    hello = ("Hello ", current_name, "You did attendance today")
+                    hello = ("Hello ", current_name,
+                             "You did attendance today")
                     print(hello)
                     engine.say(hello)
 
@@ -204,7 +395,8 @@ def StartFaceRecognition():
                 stroke = 2
                 font = cv2.QT_FONT_NORMAL
                 cv2.putText(
-                    frame, "UNKNOWN", (x, y), font, 1, color, stroke, cv2.LINE_AA
+                    frame, "UNKNOWN", (x,
+                                       y), font, 1, color, stroke, cv2.LINE_AA
                 )
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), (2))
                 hello = "Your face is not recognized"
@@ -383,7 +575,8 @@ class MainPage(QDialog):
             self.class_info = curr_class
 
             # assign button event handler
-            self.login_history_button_courseinfo.clicked.connect(self.gotoLoginHistory)
+            self.login_history_button_courseinfo.clicked.connect(
+                self.gotoLoginHistory)
             self.login_history_button_courseinfo.setStyleSheet(
                 "background-color:#0B5563; color: white"
             )
@@ -402,7 +595,10 @@ class MainPage(QDialog):
                 "background-color:#0B5563; color: white"
             )
             # change welcome message
-            self.welcome_message_label_courseinfo.setText("Welcome " + student_name)
+            self.welcome_message_label_courseinfo.setText(
+                "Welcome " + student_name)
+
+            # get class info
 
             # get class info
 
@@ -413,7 +609,8 @@ class MainPage(QDialog):
                 )
             else:
                 self.course_code_label_courseinfo.setText(
-                    curr_class["code"] + "    Tutorial Gp" + str(curr_class["group"])
+                    curr_class["code"] + "    Tutorial Gp" +
+                    str(curr_class["group"])
                 )
 
             self.course_name_label_courseinfo.setText(curr_class["name"])
@@ -432,7 +629,8 @@ class MainPage(QDialog):
 
             # change course info
 
-            self.course_info_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
+            self.course_info_list_courseinfo.setFont(
+                QFont("Noto Sans CJK HK", 12))
             # self.course_info_list_courseinfo.setOpenExternalLinks(True)
             self.course_info_list_courseinfo.addItem(
                 "Time: "
@@ -479,7 +677,8 @@ class MainPage(QDialog):
             link = cursor.fetchall()[0][0]
 
             self.course_info_list_courseinfo.addItem("Zoom Link: " + link)
-            self.course_info_list_courseinfo.itemClicked.connect(self.zoom_link)
+            self.course_info_list_courseinfo.itemClicked.connect(
+                self.zoom_link)
             self.class_info["zoom_link"] = link.replace("\r", "")
 
             # get insturctor info
@@ -530,13 +729,15 @@ class MainPage(QDialog):
                             count += 1
 
                     note_link_list.append(
-                        str("".join(temp[index[0] + 1 : index[1]])).replace("\\r", "")
+                        str("".join(temp[index[0] + 1: index[1]])
+                            ).replace("\\r", "")
                     )
 
                 self.note_link = note_link_list
 
                 # set list font size
-                self.material_list_courseinfo.setFont(QFont("Noto Sans CJK HK", 12))
+                self.material_list_courseinfo.setFont(
+                    QFont("Noto Sans CJK HK", 12))
 
                 # add material to list
                 for i in range(len(self.note_link)):
@@ -544,7 +745,8 @@ class MainPage(QDialog):
                         "Note" + str(i + 1) + ": " + self.note_link[i]
                     )
 
-                self.material_list_courseinfo.itemClicked.connect(self.material_link)
+                self.material_list_courseinfo.itemClicked.connect(
+                    self.material_link)
 
         # load Timetable page if do NOT have class
         else:
@@ -552,7 +754,8 @@ class MainPage(QDialog):
             loadUi("Timetable.ui", self)
 
             # assign button event handler
-            self.login_history_button_timetable.clicked.connect(self.gotoLoginHistory)
+            self.login_history_button_timetable.clicked.connect(
+                self.gotoLoginHistory)
             self.login_history_button_timetable.setStyleSheet(
                 "background-color:#0B5563; color: white"
             )
@@ -567,7 +770,8 @@ class MainPage(QDialog):
             )
 
             # change welcome message
-            self.welcome_message_label_timetable.setText("Welcome " + student_name)
+            self.welcome_message_label_timetable.setText(
+                "Welcome " + student_name)
 
             # set height of each row
             self.timetable_table.verticalHeader().setDefaultSectionSize(40)
@@ -649,7 +853,8 @@ class MainPage(QDialog):
     def material_link(self, clickedItem):
         index = int(clickedItem.text()[4]) - 1
         path = Path(os.getcwd())
-        webbrowser.open_new(os.getcwd().replace("ui_files", "") + self.note_link[index])
+        webbrowser.open_new(os.getcwd().replace(
+            "ui_files", "") + self.note_link[index])
 
     def emailMe(self):
         # set popup window
@@ -680,7 +885,8 @@ class MainPage(QDialog):
         materials = ""
         for i in range(len(self.note_link)):
             materials = (
-                materials + "Note" + str(i + 1) + ": " + self.note_link[i] + "\n    "
+                materials + "Note" + str(i + 1) +
+                ": " + self.note_link[i] + "\n    "
             )
 
         email_content = f"""{self.class_info["code"]} {self.class_info["name"]} {self.class_info["mode"]}
@@ -814,8 +1020,8 @@ def exiting(login_time):
 # StartFaceRecognition()
 app = QApplication(sys.argv)
 widget = QtWidgets.QStackedWidget()
-# login = Login()
-login = MainPage()
+login = Login()
+# login = MainPage()
 widget.addWidget(login)
 widget.setFixedHeight(768)
 widget.setFixedWidth(1024)
@@ -825,4 +1031,3 @@ try:
     sys.exit(app.exec_())
 except:
     exiting(login_time)
-
