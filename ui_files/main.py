@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 
 conn = mysql.connector.connect(
-    host="localhost", user="root", passwd="", database="3278_GroupProject"
+    host="localhost", user="root", passwd="flutterball55", database="3278_GroupProject"
 )
 cursor = conn.cursor(buffered=True)
 
@@ -631,7 +631,7 @@ class MainPage(QDialog):
 
             # disable cell edit
             self.timetable_table.setEditTriggers(
-                QtGui.QAbstractItemView.NoEditTriggers)
+                QtWidgets.QAbstractItemView.NoEditTriggers)
 
             # get number of col and row
             col_num = self.timetable_table.columnCount()
