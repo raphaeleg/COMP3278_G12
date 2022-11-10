@@ -72,6 +72,12 @@ class Login(QDialog):
         if data == "error":
             # the student's data is not in the database
             print("The user " + student_uid + " is NOT FOUND in the database.")
+            # set up popup window
+            msg = QMessageBox()
+            msg.setWindowTitle("Incorrect Student ID")
+            msg.setText("Incorrect Student ID!!! Please try again")
+            # show popup window
+            x = msg.exec_()
             self.usernameInput_lineEdit_login.clear()
         else:
             # student_uid = self.username.text();
@@ -271,8 +277,7 @@ class MainPage(QDialog):
     def __init__(self):
         super(MainPage, self).__init__()
         # get current time
-        time_now = datetime.today().replace(day=2, hour=00, minute=00)
-
+        time_now = datetime.today()
         # list of class for timetable
         class_list = []
 
