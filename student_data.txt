@@ -2,4 +2,4 @@
 3037123457;Wong Chris;chriswong@connect.hku.hk;BEng(CompSc);2019-09-01;4
 3037123458;Ng Tsz Ching;u357123458@connect.hku.hk;BEng(CivE);2020-09-01;3
 3037123459;Lee Siu Ming;smlee33@connect.hku.hk;BEng(CE);2020-09-01;3
-3035712345;Puo Ling;puoling@connect.hku.hk;BEng(CompSc);2020-09-01;3
+3035712345;Ip Regina;reginabb@connect.hku.hk;BEng(CompSc);2020-09-01;3
