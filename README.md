@@ -6,10 +6,39 @@
 COMP3278 Introduction to database management systems – Group 12
 
 ## Screenshots
-Tmp
+![login](./docs/login.png)
+
+![face_recog](./docs/face_recog.png)
+
+![home_1](./docs/home_1.png)
+
+![home_2](./docs/home_2.png)
+
+![login_history](./docs/login_history.png)
+
+![email_noti](./docs/email_noti.png)
+
+![email_content](./docs/email_content.png)
+
 
 ## Project Structure
-Tmp  
+
+    .
+    ├── data_files                      # Database tables data
+    │   └── ...
+    ├── ui_files
+    │   ├── FaceRecognition             # Face recognition
+    │   │   ├── data                    # Raw photos for face recognition training
+    │   │   ├── face_capture.py         # Collect face data
+    │   │   └── train.py                # Train face recognition models
+    │   ├── ...
+    │   └── main.py                     # Application entry point
+    ├── COMP3278-1A_Lecture_1...
+    ├── COMP3278-1A_Lecture_2...
+    ├── GroupDB.sql                     # SQL for Database tables creation
+    ├── README.md
+    ├── data.sql                        # SQL for database tables data insertion
+    └── temp.pdf
 
 ## Database Setup
 
@@ -22,7 +51,7 @@ https://stackoverflow.com/questions/59993844/error-loading-local-data-is-disable
 
 ## Setting Up Development Environment
 
-### Python 3.7
+### Python 3.7/3.8
 Conda environments can be used in by creating and activating a new conda environment  
 1. Install python dependencies, the requirements.txt is in ui_files\FaceRecognition directory
 
