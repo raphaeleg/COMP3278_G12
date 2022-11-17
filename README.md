@@ -3,7 +3,8 @@
 
 # Intelligent Course Management System (ICMS)
 
-COMP3278 Introduction to database management systems – Group 12
+COMP3278 Introduction to database management systems – Group 12  
+https://github.com/raphaeleg/COMP3278_G12
 
 ## Screenshots
 ![login](./docs/login.png)
